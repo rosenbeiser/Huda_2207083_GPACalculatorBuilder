@@ -1,0 +1,78 @@
+.root-pane {
+    -fx-background-color: linear-gradient(to bottom, #050009, #0A0030);
+}
+
+.card {
+    -fx-background-color: #140032;
+    -fx-background-radius: 20;
+    -fx-padding: 22;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 28, 0.45, 0, 8);
+}
+
+.title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.small-text {
+    -fx-text-fill: #E2C9FF;
+    -fx-font-size: 15px;
+}
+
+.label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.button {
+    -fx-background-color: #5A00D1;
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 14;
+    -fx-padding: 10 26;
+    -fx-cursor: hand;
+    -fx-border-color: #B44CFF;
+    -fx-border-width: 1.5;
+}
+
+.button:hover {
+    -fx-background-color: #9015FF;
+    -fx-border-color: #D375FF;
+}
+
+.button:pressed {
+    -fx-background-color: #3A008D;
+    -fx-border-color: #B44CFF;
+}
+
+.primary-button {
+    -fx-background-color: #00C9FF;
+    -fx-text-fill: black;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 16;
+    -fx-padding: 12 30;
+}
+
+.primary-button:hover {
+    -fx-background-color: #46E0FF;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #00A3CC;
+}
+
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.thumb {
+    -fx-background-color: #3E0070;
+    -fx-background-radius: 6;
+}
+
+.thumb:hover {
+    -fx-background-color: #BB3CFF;
+}
