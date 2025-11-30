@@ -19,7 +19,6 @@ public class DatabaseController {
     @FXML private TableColumn<SemesterDisplay, String> colSemesterName;
     @FXML private TableColumn<SemesterDisplay, String> colGPA;
     @FXML private TableColumn<SemesterDisplay, String> colCredits;
-    @FXML private TableColumn<SemesterDisplay, String> colDate;
 
     @FXML private TableView<CourseDisplay> courseTable;
     @FXML private TableColumn<CourseDisplay, String> colCourseCode;
@@ -54,7 +53,6 @@ public class DatabaseController {
         colSemesterName.setCellValueFactory(new PropertyValueFactory<>("semesterName"));
         colGPA.setCellValueFactory(new PropertyValueFactory<>("gpa"));
         colCredits.setCellValueFactory(new PropertyValueFactory<>("credits"));
-        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
 
         // Setup course table columns
         colCourseCode.setCellValueFactory(new PropertyValueFactory<>("courseCode"));
@@ -92,8 +90,7 @@ public class DatabaseController {
                                 record.getId(),
                                 record.getSemesterName(),
                                 String.format("%.2f", record.getGpa()),
-                                String.format("%.1f", record.getTotalCredits()),
-                                dateFormat.format(record.getCreatedDate())
+                                String.format("%.1f", record.getTotalCredits())
                         ));
                     }
                     loadStatistics();
@@ -223,21 +220,18 @@ public class DatabaseController {
         private String semesterName;
         private String gpa;
         private String credits;
-        private String date;
 
-        public SemesterDisplay(int id, String semesterName, String gpa, String credits, String date) {
+        public SemesterDisplay(int id, String semesterName, String gpa, String credits) {
             this.id = id;
             this.semesterName = semesterName;
             this.gpa = gpa;
             this.credits = credits;
-            this.date = date;
         }
 
         public int getId() { return id; }
         public String getSemesterName() { return semesterName; }
         public String getGpa() { return gpa; }
         public String getCredits() { return credits; }
-        public String getDate() { return date; }
     }
 
     public static class CourseDisplay {

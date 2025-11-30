@@ -220,13 +220,13 @@ public class gpainputcontroller {
 
             Stage stage = new Stage();
             stage.setTitle("Database Manager");
-            stage.setWidth(600);
-            stage.setHeight(450);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.setResizable(true);
-            stage.setMinWidth(900);
-            stage.setMinHeight(700);
+            stage.setMinWidth(700);
+            stage.setMinHeight(650);
+            stage.setWidth(700);
+            stage.setHeight(650);
 
             // Cleanup on close
             stage.setOnCloseRequest(event -> {
@@ -318,7 +318,6 @@ public class gpainputcontroller {
         }
     }
 
-    // Observable Course class with properties
     public static class Course {
         private final StringProperty courseCode;
         private final StringProperty courseName;
@@ -337,7 +336,6 @@ public class gpainputcontroller {
             this.teacher2 = new SimpleStringProperty(teacher2);
         }
 
-        // Property getters
         public StringProperty courseCodeProperty() { return courseCode; }
         public StringProperty courseNameProperty() { return courseName; }
         public DoubleProperty creditProperty() { return credit; }
@@ -345,7 +343,6 @@ public class gpainputcontroller {
         public StringProperty teacher1Property() { return teacher1; }
         public StringProperty teacher2Property() { return teacher2; }
 
-        // Regular getters
         public String getCourseCode() { return courseCode.get(); }
         public String getCourseName() { return courseName.get(); }
         public double getCredit() { return credit.get(); }
@@ -353,7 +350,6 @@ public class gpainputcontroller {
         public String getTeacher1() { return teacher1.get(); }
         public String getTeacher2() { return teacher2.get(); }
 
-        // Setters
         public void setCourseCode(String value) { courseCode.set(value); }
         public void setCourseName(String value) { courseName.set(value); }
         public void setCredit(double value) { credit.set(value); }

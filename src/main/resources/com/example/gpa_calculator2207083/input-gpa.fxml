@@ -120,7 +120,6 @@
                     <children>
                         <Label fx:id="buttonWarning" styleClass="warning-label" textFill="RED" wrapText="true" />
 
-                        <!-- Main Action Buttons -->
                         <HBox alignment="CENTER" spacing="12.0">
                             <children>
                                 <Button fx:id="getResult" mnemonicParsing="false" onAction="#getResult" prefHeight="32.0" prefWidth="120.0" styleClass="yellow-button" text="📊 Calculate" />
@@ -131,7 +130,6 @@
 
                         <Separator />
 
-                        <!-- Database Operations -->
                         <Label styleClass="section-header" text="DATABASE OPERATIONS" />
                         <HBox alignment="CENTER" spacing="20.0">
                             <children>
