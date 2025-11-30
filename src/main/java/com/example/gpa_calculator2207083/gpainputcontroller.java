@@ -9,10 +9,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import java.io.File;
-import java.util.Optional;
 
 public class gpainputcontroller {
 
@@ -38,15 +36,11 @@ public class gpainputcontroller {
     @FXML private Button clearAll;
     @FXML private Button saveToDatabase;
     @FXML private Button loadFromDatabase;
-    @FXML private Button exportJSON;
-    @FXML private Button importJSON;
-    @FXML private Button viewStatistics;
     @FXML private ProgressIndicator progressIndicator;
 
     private ObservableList<Course> courseList = FXCollections.observableArrayList();
     private DatabaseService databaseService;
 
-    // Observable properties for real-time updates
     private DoubleProperty totalCreditsProperty = new SimpleDoubleProperty(0.0);
     private IntegerProperty courseCountProperty = new SimpleIntegerProperty(0);
 
@@ -67,7 +61,6 @@ public class gpainputcontroller {
             progressIndicator.setVisible(false);
         }
 
-        // Observable listeners
         courseList.addListener((javafx.collections.ListChangeListener.Change<? extends Course> c) -> {
             updateCalculateButtonState();
             updateObservableProperties();
@@ -77,7 +70,6 @@ public class gpainputcontroller {
             updateCalculateButtonState();
         });
 
-        // Bind properties to display real-time info
         totalCreditsProperty.addListener((obs, oldVal, newVal) -> {
             System.out.println("Total Credits Updated: " + newVal);
         });
@@ -176,7 +168,7 @@ public class gpainputcontroller {
             resultController.setResultData(gpa, totalCredits, courseList);
 
             Stage stage = new Stage();
-            stage.setTitle("GPA Result - Academic Achievement");
+            stage.setTitle("GPA Result");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
@@ -192,76 +184,24 @@ public class gpainputcontroller {
             return;
         }
 
-        TextInputDialog dialog = new TextInputDialog("Fall 2024");
-        dialog.setTitle("Save Semester");
-        dialog.setHeaderText("Enter Semester Name");
-        dialog.setContentText("Semester:");
-
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(semesterName -> {
-            if (progressIndicator != null) progressIndicator.setVisible(true);
-
-            double totalCredits = getCurrentTotalCredits();
-            double gpa = calculateGPA();
-
-            databaseService.saveSemesterAsync(
-                    semesterName, totalCredits, gpa, courseList,
-                    success -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(false);
-                        if (success) {
-                            showAlert("Success", "Semester Saved",
-                                    "Semester '" + semesterName + "' saved successfully!");
-                        } else {
-                            showAlert("Error", "Save Failed", "Failed to save semester to database.");
-                        }
-                    },
-                    error -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(false);
-                        showAlert("Error", "Database Error", error);
-                    }
-            );
-        });
-    }
-
-    @FXML
-    private void loadFromDatabase() {
         if (progressIndicator != null) progressIndicator.setVisible(true);
 
-        databaseService.loadSemestersAsync(
-                semesters -> {
+        double totalCredits = getCurrentTotalCredits();
+        double gpa = calculateGPA();
+
+        // Use a default semester name with timestamp
+        String semesterName = "Semester_" + System.currentTimeMillis();
+
+        databaseService.saveSemesterAsync(
+                semesterName, totalCredits, gpa, courseList,
+                success -> {
                     if (progressIndicator != null) progressIndicator.setVisible(false);
-
-                    if (semesters.isEmpty()) {
-                        showAlert("Info", "No Data", "No saved semesters found in database.");
-                        return;
+                    if (success) {
+                        showAlert("Success", "Semester Saved",
+                                "Semester saved successfully!");
+                    } else {
+                        showAlert("Error", "Save Failed", "Failed to save semester to database.");
                     }
-
-                    // Create selection dialog
-                    ChoiceDialog<DatabaseManager.SemesterRecord> dialog = new ChoiceDialog<>(semesters.get(0), semesters);
-                    dialog.setTitle("Load Semester");
-                    dialog.setHeaderText("Select a semester to load");
-                    dialog.setContentText("Choose semester:");
-
-                    Optional<DatabaseManager.SemesterRecord> result = dialog.showAndWait();
-                    result.ifPresent(selected -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(true);
-
-                        databaseService.loadCoursesAsync(
-                                selected.getId(),
-                                courses -> {
-                                    if (progressIndicator != null) progressIndicator.setVisible(false);
-                                    courseList.clear();
-                                    courseList.addAll(courses);
-                                    txtTotalCredit.setText(String.valueOf(selected.getTotalCredits()));
-                                    showAlert("Success", "Semester Loaded",
-                                            "Loaded semester: " + selected.getSemesterName());
-                                },
-                                error -> {
-                                    if (progressIndicator != null) progressIndicator.setVisible(false);
-                                    showAlert("Error", "Load Error", error);
-                                }
-                        );
-                    });
                 },
                 error -> {
                     if (progressIndicator != null) progressIndicator.setVisible(false);
@@ -271,96 +211,34 @@ public class gpainputcontroller {
     }
 
     @FXML
-    private void exportJSON() {
-        if (courseList.isEmpty()) {
-            buttonWarning.setText("No data to export!");
-            return;
+    private void loadFromDatabase() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("databaseview.fxml"));
+            Parent root = loader.load();
+
+            DatabaseController databaseController = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("Database Manager");
+            stage.setWidth(600);
+            stage.setHeight(450);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.setResizable(true);
+            stage.setMinWidth(900);
+            stage.setMinHeight(700);
+
+            // Cleanup on close
+            stage.setOnCloseRequest(event -> {
+                databaseController.cleanup();
+            });
+
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to open database window", e.getMessage());
         }
-
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Export to JSON");
-        fileChooser.setInitialFileName("semester_data.json");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("JSON Files", "*.json")
-        );
-
-        File file = fileChooser.showSaveDialog(exportJSON.getScene().getWindow());
-        if (file != null) {
-            if (progressIndicator != null) progressIndicator.setVisible(true);
-
-            String semesterName = "Current Semester";
-            double gpa = calculateGPA();
-            double totalCredits = getCurrentTotalCredits();
-
-            databaseService.exportToJSONAsync(
-                    semesterName, gpa, totalCredits, courseList, file.getAbsolutePath(),
-                    success -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(false);
-                        showAlert("Success", "Export Complete",
-                                "Data exported to: " + file.getName());
-                    },
-                    error -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(false);
-                        showAlert("Error", "Export Failed", error);
-                    }
-            );
-        }
-    }
-
-    @FXML
-    private void importJSON() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Import from JSON");
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("JSON Files", "*.json")
-        );
-
-        File file = fileChooser.showOpenDialog(importJSON.getScene().getWindow());
-        if (file != null) {
-            if (progressIndicator != null) progressIndicator.setVisible(true);
-
-            databaseService.importFromJSONAsync(
-                    file.getAbsolutePath(),
-                    data -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(false);
-                        courseList.clear();
-                        courseList.addAll(data.getCourses());
-                        txtTotalCredit.setText(String.valueOf(data.getTotalCredits()));
-                        showAlert("Success", "Import Complete",
-                                "Loaded semester: " + data.getSemesterName());
-                    },
-                    error -> {
-                        if (progressIndicator != null) progressIndicator.setVisible(false);
-                        showAlert("Error", "Import Failed", error);
-                    }
-            );
-        }
-    }
-
-    @FXML
-    private void viewStatistics() {
-        if (progressIndicator != null) progressIndicator.setVisible(true);
-
-        databaseService.calculateStatisticsAsync(
-                stats -> {
-                    if (progressIndicator != null) progressIndicator.setVisible(false);
-
-                    String message = String.format(
-                            "Total Semesters: %d\n" +
-                                    "Total Credits Earned: %.1f\n" +
-                                    "Cumulative GPA: %.2f",
-                            stats.getTotalSemesters(),
-                            stats.getTotalCredits(),
-                            stats.getCumulativeGPA()
-                    );
-
-                    showAlert("Academic Statistics", "Your Overall Performance", message);
-                },
-                error -> {
-                    if (progressIndicator != null) progressIndicator.setVisible(false);
-                    showAlert("Error", "Statistics Error", error);
-                }
-        );
     }
 
     @FXML
@@ -412,16 +290,15 @@ public class gpainputcontroller {
 
     private double getGradePoint(String grade) {
         return switch (grade) {
-            case "A+", "A" -> 4.0;
-            case "A-" -> 3.7;
-            case "B+" -> 3.3;
+            case "A+" -> 4.0;
+            case "A" -> 3.75;
+            case "A-" -> 3.5;
+            case "B+" -> 3.25;
             case "B" -> 3.0;
-            case "B-" -> 2.7;
-            case "C+" -> 2.3;
-            case "C" -> 2.0;
-            case "C-" -> 1.7;
-            case "D+" -> 1.3;
-            case "D" -> 1.0;
+            case "B-" -> 2.75;
+            case "C+" -> 2.5;
+            case "C" -> 2.25;
+            case "D" -> 2.0;
             case "F" -> 0.0;
             default -> 0.0;
         };
